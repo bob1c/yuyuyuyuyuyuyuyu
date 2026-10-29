@@ -56,7 +56,7 @@ a.t:hover{text-decoration:underline}
 <script>
 const TABS=[['news','Новости'],['memes','Мемы'],['trends','Тренды'],['people','Персоны']];
 const MAX=12*3600e3;
-let sortHot=0,items=new Map(),posted=new Set(),tab='news',person='',fresh=new Set(),pend=0;
+let sortHot=0,items=new Map(),posted=new Set(),tab='news',person='',reg='',fresh=new Set(),pend=0;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const age=t=>{const s=Math.max(0,(Date.now()-t)/1000|0);return s<60?s+' с':s<3600?(s/60|0)+' мин':(s/3600|0)+' ч '+((s%3600)/60|0)+' мин'};
@@ -66,16 +66,18 @@ function render(){
   const all=[...items.values()].filter(i=>Date.now()-i.ts<MAX);
   $('nav').innerHTML=TABS.map(([k,n])=>`<button data-t="${k}" class="${k==tab?'a':''}">${n}<b>${all.filter(i=>i.cat==k).length}</b></button>`).join('');
   const ppl=[...new Set(all.filter(i=>i.cat=='people').map(i=>i.person))];
-  $('chips').innerHTML=tab=='people'?['',...ppl].map(p=>`<button data-p="${esc(p)}" class="${p==person?'a':''}">${p||'Все'}</button>`).join(''):'';
+  const rg=[...new Set(all.filter(i=>i.cat=='news'&&i.reg).map(i=>i.reg))].sort((a,b)=>all.filter(i=>i.reg==b).length-all.filter(i=>i.reg==a).length);
+  $('chips').innerHTML=tab=='people'?['',...ppl].map(p=>`<button data-p="${esc(p)}" class="${p==person?'a':''}">${p||'Все'}</button>`).join(''):tab=='news'?['',...rg].map(r=>`<button data-r="${esc(r)}" class="${r==reg?'a':''}">${r||'Весь мир'}</button>`).join(''):'';
   document.body.className=tab;
-  const list=all.filter(i=>i.cat==tab&&(!person||tab!='people'||i.person==person)).sort((a,b)=>sortHot?((b.hot||0)-(a.hot||0))||b.ts-a.ts:b.ts-a.ts).slice(0,150);
+  const list=all.filter(i=>i.cat==tab&&(!person||tab!='people'||i.person==person)&&(!reg||tab!='news'||i.reg==reg)).sort((a,b)=>sortHot?((b.hot||0)-(a.hot||0))||b.ts-a.ts:b.ts-a.ts).slice(0,300);
   $('list').innerHTML=list.length?list.map(i=>`<article class="${fresh.has(i.id)?'n':''}">${i.img?`<img loading="lazy" src="${esc(i.img)}" alt="" onerror="this.remove()">`:''}<div class="bd"><div class="meta"><span class="s">${esc(i.person?i.person+' · '+i.src:i.src)}</span><span data-ts="${i.ts}">${age(i.ts)}</span>${i.hot?`<span>▲ ${i.hot>999?(i.hot/1000).toFixed(1)+'k':i.hot}</span>`:''}</div><a class="t" href="${esc(i.link)}" target="_blank" rel="noopener">${esc(i.title)}</a><div class="ac"><button class="${posted.has(i.id)?'ok':''}" data-post="${i.id}">${posted.has(i.id)?'Отправлено в канал':'В Telegram-канал'}</button></div></div></article>`).join(''):'<div class="empty">Пока пусто — новые записи появятся сами</div>';
   fresh.clear();
 }
 document.addEventListener('click',async e=>{
   if(e.target.id=='sort'){sortHot=!sortHot;e.target.textContent=sortHot?'Популярные':'Новые';render();return}
-  const t=e.target.closest('[data-t]'),p=e.target.closest('[data-p]'),b=e.target.closest('[data-post]');
-  if(t){tab=t.dataset.t;person='';render();scrollTo(0,0)}
+  const t=e.target.closest('[data-t]'),p=e.target.closest('[data-p]'),r=e.target.closest('[data-r]'),b=e.target.closest('[data-post]');
+  if(t){tab=t.dataset.t;person='';reg='';render();scrollTo(0,0)}
+  else if(r){reg=r.dataset.r;render()}
   else if(p){person=p.dataset.p;render()}
   else if(b&&!posted.has(b.dataset.post)){
     const tk=localStorage.getItem('gh')||prompt('GitHub токен (Personal access token)');if(!tk)return;

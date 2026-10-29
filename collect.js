@@ -5,18 +5,44 @@ const E = process.env, PORT = E.PORT || 3000, MAX_AGE = 12 * 3600e3;
 const UA = 'Mozilla/5.0 (compatible; PulseBot/1.0)';
 const gn = (q, lang = 'ru', gl = 'RU') => `https://news.google.com/rss/search?q=${encodeURIComponent(q + ' when:12h')}&hl=${lang}&gl=${gl}&ceid=${gl}:${lang}`;
 
+const NEWS = [
+  ['Мир', 'BBC World', 'https://feeds.bbci.co.uk/news/world/rss.xml'], ['США', 'BBC US&Canada', 'https://feeds.bbci.co.uk/news/world/us_and_canada/rss.xml'],
+  ['Европа', 'BBC Europe', 'https://feeds.bbci.co.uk/news/world/europe/rss.xml'], ['Азия', 'BBC Asia', 'https://feeds.bbci.co.uk/news/world/asia/rss.xml'],
+  ['Ближний Восток', 'BBC Middle East', 'https://feeds.bbci.co.uk/news/world/middle_east/rss.xml'], ['Африка', 'BBC Africa', 'https://feeds.bbci.co.uk/news/world/africa/rss.xml'],
+  ['Латинская Америка', 'BBC LatAm', 'https://feeds.bbci.co.uk/news/world/latin_america/rss.xml'],
+  ['Россия', 'Lenta.ru', 'https://lenta.ru/rss/news'], ['Россия', 'РИА Новости', 'https://ria.ru/export/rss2/archive/index.xml'], ['Россия', 'ТАСС', 'https://tass.ru/rss/v2.xml'],
+  ['Россия', 'Интерфакс', 'https://www.interfax.ru/rss.asp'], ['Россия', 'Meduza', 'https://meduza.io/rss/all'], ['Россия', 'РБК', 'https://rssexport.rbc.ru/rbcnews/news/30/full.rss'],
+  ['Россия', 'Коммерсантъ', 'https://www.kommersant.ru/RSS/news.xml'], ['Россия', 'Известия', 'https://iz.ru/xml/rss/all.xml'], ['Россия', 'Ведомости', 'https://www.vedomosti.ru/rss/news'],
+  ['Россия', 'Moscow Times', 'https://www.themoscowtimes.com/rss/news'],
+  ['США', 'CNN', 'http://rss.cnn.com/rss/edition.rss'], ['США', 'NYT World', 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml'], ['США', 'NYT US', 'https://rss.nytimes.com/services/xml/rss/nyt/US.xml'],
+  ['США', 'NPR', 'https://feeds.npr.org/1001/rss.xml'], ['США', 'Fox News', 'https://moxie.foxnews.com/google-publisher/latest.xml'], ['США', 'CBS News', 'https://www.cbsnews.com/latest/rss/world'],
+  ['США', 'ABC News', 'https://abcnews.go.com/abcnews/internationalheadlines'], ['США', 'Politico', 'https://rss.politico.com/politics-news.xml'], ['США', 'The Hill', 'https://thehill.com/feed/'],
+  ['США', 'Washington Post', 'https://feeds.washingtonpost.com/rss/world'], ['США', 'Google News US', 'https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en'],
+  ['США', 'Reuters', gn('site:reuters.com', 'en', 'US')], ['США', 'AP', gn('site:apnews.com', 'en', 'US')], ['США', 'Bloomberg', gn('site:bloomberg.com', 'en', 'US')],
+  ['Франция', 'France 24 EN', 'https://www.france24.com/en/rss'], ['Франция', 'France 24 FR', 'https://www.france24.com/fr/rss'], ['Франция', 'RFI', 'https://www.rfi.fr/fr/rss'],
+  ['Франция', 'Le Monde', 'https://www.lemonde.fr/rss/une.xml'], ['Франция', 'Le Figaro', 'https://www.lefigaro.fr/rss/figaro_actualites.xml'], ['Франция', 'Google News FR', 'https://news.google.com/rss?hl=fr&gl=FR&ceid=FR:fr'],
+  ['Германия', 'DW RU', 'https://rss.dw.com/rdf/rss-ru-all'], ['Германия', 'DW EN', 'https://rss.dw.com/rdf/rss-en-all'], ['Германия', 'Spiegel Intl', 'https://www.spiegel.de/international/index.rss'], ['Германия', 'Tagesschau', 'https://www.tagesschau.de/index~rss2.xml'],
+  ['Великобритания', 'Guardian', 'https://www.theguardian.com/world/rss'], ['Великобритания', 'Sky News', 'https://feeds.skynews.com/feeds/rss/world.xml'], ['Великобритания', 'Google News UK', 'https://news.google.com/rss?hl=en-GB&gl=GB&ceid=GB:en'],
+  ['Европа', 'Euronews', 'https://www.euronews.com/rss'], ['Испания', 'El País', 'https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada'], ['Латинская Америка', 'BBC Mundo', 'https://feeds.bbci.co.uk/mundo/rss.xml'],
+  ['Украина', 'Украинская правда', 'https://www.pravda.com.ua/rss/'], ['Украина', 'Kyiv Independent', 'https://kyivindependent.com/news-archive/rss/'], ['Украина', 'Укринформ', 'https://www.ukrinform.net/rss/block-lastnews'],
+  ['Китай', 'Xinhua', 'http://www.xinhuanet.com/english/rss/worldrss.xml'], ['Китай', 'SCMP', 'https://www.scmp.com/rss/91/feed'],
+  ['Япония', 'NHK', 'https://www3.nhk.or.jp/rss/news/cat0.xml'], ['Япония', 'Japan Times', 'https://www.japantimes.co.jp/feed/'],
+  ['Индия', 'Times of India', 'https://timesofindia.indiatimes.com/rssfeedstopstories.cms'], ['Индия', 'The Hindu', 'https://www.thehindu.com/news/international/feeder/default.rss'],
+  ['Ближний Восток', 'Al Jazeera', 'https://www.aljazeera.com/xml/rss/all.xml'], ['Израиль', 'Times of Israel', 'https://www.timesofisrael.com/feed/'], ['Израиль', 'Jerusalem Post', 'https://www.jpost.com/rss/rssfeedsfrontpage.aspx'],
+  ['Канада', 'CBC', 'https://www.cbc.ca/webfeed/rss/rss-world'], ['Австралия', 'ABC Australia', 'https://www.abc.net.au/news/feed/51120/rss.xml'],
+  ['Россия', 'Google News RU', 'https://news.google.com/rss?hl=ru&gl=RU&ceid=RU:ru'],
+];
+const COUNTRIES = ['Франция', 'США', 'Россия', 'Украина', 'Германия', 'Великобритания', 'Китай', 'Япония', 'Индия', 'Турция', 'Израиль', 'Иран', 'Италия', 'Испания', 'Польша', 'Бразилия', 'Канада', 'Австралия', 'Южная Корея', 'Саудовская Аравия', 'Египет', 'Мексика', 'Аргентина', 'Казахстан', 'Беларусь', 'ЮАР', 'Нигерия'];
+
 // ===== ИСТОЧНИКИ: добавляй свои строки. every = пауза опроса в секундах =====
 const S = [
-  // Новости (RSS)
-  ...[['BBC', 'https://feeds.bbci.co.uk/news/world/rss.xml'], ['Lenta.ru', 'https://lenta.ru/rss/news'], ['РИА Новости', 'https://ria.ru/export/rss2/archive/index.xml'],
-  ['ТАСС', 'https://tass.ru/rss/v2.xml'], ['Интерфакс', 'https://www.interfax.ru/rss.asp'], ['Meduza', 'https://meduza.io/rss/all'], ['РБК', 'https://rssexport.rbc.ru/rbcnews/news/30/full.rss'],
-  ['Коммерсантъ', 'https://www.kommersant.ru/RSS/news.xml'], ['DW', 'https://rss.dw.com/rdf/rss-ru-all'], ['Al Jazeera', 'https://www.aljazeera.com/xml/rss/all.xml'],
-  ['CNN', 'http://rss.cnn.com/rss/edition.rss'], ['NYT', 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml'], ['Guardian', 'https://www.theguardian.com/world/rss'],
-  ['Google News RU', 'https://news.google.com/rss?hl=ru&gl=RU&ceid=RU:ru'], ['Google News US', 'https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en'], ['Reuters', gn('site:reuters.com', 'en', 'US')], ['AP', gn('site:apnews.com', 'en', 'US')], ['Bloomberg', gn('site:bloomberg.com', 'en', 'US')]]
-    .map(([name, url]) => ({ t: 'rss', cat: 'news', name, url, every: 30 })),
+  // Новости мира (RSS): [страна/регион, название, ссылка]
+  ...NEWS.map(([reg, name, url]) => ({ t: 'rss', cat: 'news', reg, name, url, every: 45 })),
+  // Новости по странам на русском (Google News: поиск по стране за 12 часов)
+  ...COUNTRIES.map(c => ({ t: 'rss', cat: 'news', reg: c, name: 'Google News · ' + c, url: gn(c, 'ru', 'RU'), every: 60 })),
   // Telegram-каналы (публичные, через t.me/s/). Добавляй любые username.
-  ...[['rian_ru', 'news'], ['tass_agency', 'news'], ['bbcrussian', 'news'], ['meduzalive', 'news'], ['rbc_news', 'news'], ['breakingmash', 'news'], ['readovkanews', 'news'], ['Cbpub', 'news']]
-    .map(([u, cat]) => ({ t: 'tg', cat, name: 'TG @' + u, url: 'https://t.me/s/' + u, every: 20 })),
+  ...[['rian_ru', 'news'], ['tass_agency', 'news'], ['bbcrussian', 'news'], ['meduzalive', 'news'], ['rbc_news', 'news'], ['breakingmash', 'news'], ['readovkanews', 'news'], ['Cbpub', 'news'], ['nexta_live', 'news'], ['svtvnews', 'news'], ['lentadnya', 'news']]
+    .map(([u, cat]) => ({ t: 'tg', cat, reg: cat == 'news' ? 'Telegram' : undefined, name: 'TG @' + u, url: 'https://t.me/s/' + u, every: 20 })),
   // Мемы
   ...['memes', 'dankmemes', 'funny', 'me_irl', 'ProgrammerHumor', 'Pikabu', 'KGBTR'].map(r => ({ t: 'reddit', cat: 'memes', name: 'r/' + r, url: `https://www.reddit.com/r/${r}/hot.json?limit=25`, every: 45 })),
   ...['mudak', 'dvachannel', 'lentachold'].map(u => ({ t: 'tg', cat: 'memes', name: 'TG @' + u, url: 'https://t.me/s/' + u, every: 30 })),
@@ -96,7 +122,7 @@ function add(s, x) {
   const id = crypto.createHash('sha1').update(x.link + (s.person || '')).digest('hex').slice(0, 12);
   if (map.has(id)) { if (x.hot) map.get(id).hot = x.hot; return; }
   if (['news', 'trends'].includes(s.cat)) { const k = tkey(x.title); if (tkeys.has(k)) return; tkeys.add(k); }
-  const it = { id, title: x.title.slice(0, 300), link: x.link, ts: x.ts, img: x.img, hot: x.hot, cat: s.cat, src: s.name, person: s.person };
+  const it = { id, title: x.title.slice(0, 300), link: x.link, ts: x.ts, img: x.img, hot: x.hot, cat: s.cat, src: s.name, person: s.person, reg: s.reg };
   map.set(id, it); fresh.push(it);
 }
 (async () => {
