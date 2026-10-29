@@ -1,0 +1,19 @@
+name: post-to-telegram
+on:
+  repository_dispatch:
+    types: [post]
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    env:
+      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+      CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+      POST_ID: ${{ github.event.client_payload.id }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: |
+          mkdir -p data
+          git fetch origin data && git show origin/data:items.json > data/items.json
+          node collect.js post "$POST_ID"

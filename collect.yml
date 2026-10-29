@@ -1,0 +1,31 @@
+name: collect
+on:
+  schedule: [{ cron: '*/5 * * * *' }]
+  workflow_dispatch:
+concurrency: { group: collect, cancel-in-progress: false }
+permissions: { contents: write }
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+      CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+      TIKTOK_URL: ${{ secrets.TIKTOK_URL }}
+      TIKTOK_KEY: ${{ secrets.TIKTOK_KEY }}
+      AUTO_POST: ${{ vars.AUTO_POST }}
+      AUTO_CATS: ${{ vars.AUTO_CATS }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Loop (каждые ~35 сек в течение 5 минут)
+        run: |
+          mkdir -p data
+          git fetch origin data 2>/dev/null && git show origin/data:items.json > data/items.json || true
+          for i in 1 2 3 4 5 6 7 8; do
+            node collect.js
+            rm -rf /tmp/d && mkdir /tmp/d && cp data/items.json /tmp/d/
+            (cd /tmp/d && git init -q -b data && git add . && git -c user.name=pulse -c user.email=pulse@users.noreply.github.com commit -qm data && git push -fq "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" data)
+            sleep 30
+          done
