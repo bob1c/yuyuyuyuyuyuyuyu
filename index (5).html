@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PULSE — всё, что происходит сейчас</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+<style>
+:root{--bg:#f3f1ec;--card:#fff;--ink:#16161a;--mut:#6b6b76;--line:#dcd9d0;--acc:#e5322d;--new:#fff1d6}
+@media(prefers-color-scheme:dark){:root{--bg:#101014;--card:#18181e;--ink:#f1f1f4;--mut:#8d8d9a;--line:#2a2a33;--acc:#ff4d47;--new:#3a2d12}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 "Segoe UI",system-ui,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:12px 14px 0}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+h1{margin:0;font:800 22px/1 Georgia,serif;letter-spacing:-.5px}
+#sort{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:5px 11px;font-size:13px;cursor:pointer}
+.live{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mut)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--mut)}
+.on .dot{background:var(--acc);animation:p 1s infinite}
+@keyframes p{50%{opacity:.25}}
+nav{display:flex;gap:4px;overflow-x:auto;margin-top:10px;scrollbar-width:none}
+nav button{flex:none;background:none;border:0;border-bottom:3px solid transparent;color:var(--mut);font:600 15px inherit;padding:10px 12px;cursor:pointer}
+nav button.a{color:var(--ink);border-color:var(--acc)}
+nav b{font-weight:600;font-size:12px;margin-left:5px;color:var(--acc)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:10px 14px 0;scrollbar-width:none}
+.chips button{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:6px 12px;font-size:13px;cursor:pointer}
+.chips button.a{background:var(--ink);color:var(--bg)}
+main{max-width:760px;margin:0 auto;padding:12px 14px 40px}
+.grid{display:grid;gap:10px}
+.memes .grid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+article{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+article.n{animation:f 4s ease-out}
+@keyframes f{from{background:var(--new)}}
+article img{display:block;width:100%;max-height:340px;object-fit:cover;background:var(--line)}
+.bd{padding:11px 13px}
+.meta{display:flex;gap:8px;font-size:12px;color:var(--mut);margin-bottom:5px;flex-wrap:wrap}
+.meta .s{color:var(--acc);font-weight:700}
+a.t{color:var(--ink);text-decoration:none;font-weight:600;overflow-wrap:anywhere}
+a.t:hover{text-decoration:underline}
+.ac{margin-top:9px;display:flex;gap:8px}
+.ac button{border:1px solid var(--line);background:none;color:var(--ink);border-radius:7px;padding:6px 10px;font-size:13px;cursor:pointer}
+.ac button.ok{background:var(--acc);border-color:var(--acc);color:#fff}
+.empty{text-align:center;color:var(--mut);padding:50px 0}
+article.sg{border-left:5px solid var(--line)}article.sg.hi{border-left-color:#18a058}article.sg.mid{border-left-color:#e0a100}
+.badge{background:var(--ink);color:var(--bg);border-radius:6px;padding:1px 8px;font-weight:800;font-size:14px}.sg.hi .badge{background:#18a058;color:#fff}.sg.mid .badge{background:#e0a100;color:#111}
+.why{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0 4px}.why span{font-size:12px;border:1px solid var(--line);border-radius:99px;padding:2px 8px;color:var(--mut)}.why .neg{color:var(--acc);border-color:var(--acc)}
+.cl{font-size:12px;color:var(--mut);margin:4px 0}.tk{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.tk button{border:1px dashed var(--mut);background:none;color:var(--ink);border-radius:6px;padding:3px 9px;font:700 13px monospace;cursor:pointer}
+.dx{display:inline-block;font-size:13px;margin:4px 0;padding:3px 9px;border-radius:7px;background:var(--line)}.dx.g{background:#d9f3e3;color:#0b5a2e}.dx.y{background:#fff1c9;color:#6b4b00}.dx.r{background:#fddcda;color:#8a1410}
+.dx a{color:inherit;font-weight:700}@media(prefers-color-scheme:dark){.dx.g{background:#123a24;color:#8fe3b0}.dx.y{background:#3d3210;color:#f2d278}.dx.r{background:#46201f;color:#ffaaa5}}
+.ac a.btn{border:1px solid var(--line);color:var(--ink);text-decoration:none;border-radius:7px;padding:6px 10px;font-size:13px}
+.metas{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}.mc{border:1px solid var(--line);border-radius:99px;padding:2px 9px}.mc i{font-style:normal;font-weight:700}.up{color:#18a058}.dn{color:var(--acc)}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--mut)}.tools select,.tools button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:5px 11px;font-size:13px;cursor:pointer}.tools button.a{background:var(--ink);color:var(--bg)}
+details.how{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:13px}details.how summary{cursor:pointer;font-weight:600}details.how li{margin:5px 0}.warn{color:var(--mut);font-size:12px}
+.signals #sort{display:none}.solo nav{display:none}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;opacity:0;transition:.2s;pointer-events:none}
+#toast.s{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <div class="top"><h1>PULSE</h1><button id="sort" type="button">Новые</button><div class="live" id="live"><span class="dot"></span><span id="st">подключение…</span></div></div>
+  <nav id="nav"></nav>
+</header>
+<div class="chips" id="chips"></div>
+<main><div class="grid" id="list"></div></main>
+<div id="toast"></div>
+<script>
+const Q=new URLSearchParams(location.search),SOLO=Q.get('solo')=='1';
+const TABS=[['signals','🚀 Мемкоины'],['news','Новости'],['memes','Мемы'],['trends','Тренды'],['people','Персоны']];
+const MAX=12*3600e3;
+let sortHot=0,items=new Map(),posted=new Set(),tab=SOLO?'signals':(Q.get('tab')||'signals'),person='',reg='',sigs=[],metas=[],sigKey='',seenSig=new Set(),ready=0,ALERT=60,minS=+(localStorage.getItem('mins')||40),snd=localStorage.getItem('snd')=='1',fresh=new Set(),pend=0;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const age=t=>{const s=Math.max(0,(Date.now()-t)/1000|0);return s<60?s+' с':s<3600?(s/60|0)+' мин':(s/3600|0)+' ч '+((s%3600)/60|0)+' мин'};
+const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('s');setTimeout(()=>t.classList.remove('s'),2500)};
+const pct=v=>typeof v=='number'?(v>=0?'+':'')+Math.round(v)+'%':'';
+const money=n=>n>=1e6?'$'+(n/1e6).toFixed(1)+'M':n>=1e3?'$'+Math.round(n/1e3)+'k':'$'+Math.round(n||0);
+const agoMin=m=>m<60?m+' мин':(m/60|0)+' ч';
+function beep(){try{const c=new(window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.value=.15;o.start();setTimeout(()=>{o.frequency.value=1175},150);setTimeout(()=>{o.stop();c.close()},380)}catch{}}
+function ping(s){toast('🚨 '+s.score+' · '+s.title.slice(0,60));if(snd){beep();try{if(Notification.permission=='granted')new Notification('Сигнал '+s.score+'/100',{body:s.title})}catch{}}}
+const dexTag=s=>{const d=s.dex;if(!d)return'<span class="dx">Наличие монет не проверено — нажми DexScreener</span>';if(!d.n)return'<span class="dx g">🟢 Монет по теме на Solana за 48 ч ещё нет — можно быть первым</span>';const b=d.best;return`<span class="dx ${b.mcap>=1e6?'r':'y'}">${b.mcap>=1e6?'🔴 Уже запампили':'🟡 Уже есть'} ${d.n}: <a href="${esc(b.url)}" target="_blank" rel="noopener">${esc(b.symbol)}</a> ${money(b.mcap)} · ${agoMin(b.ageMin)} назад</span>`};
+function renderSignals(){
+  const list=sigs.filter(s=>s.score>=minS&&Date.now()-s.ts<MAX);
+  const mt=metas.length?`<div class="metas"><b>🔥 Горячие нарративы (DexScreener):</b>${metas.map(m=>`<span class="mc">${esc(m.name)} <i class="${(m.h1||0)>=0?'up':'dn'}">${pct(m.h1)} 1ч</i> <i class="${(m.h6||0)>=0?'up':'dn'}">${pct(m.h6)} 6ч</i></span>`).join('')}</div>`:'';
+  const tools=`<div class="tools"><label>Мин. оценка <select id="mins">${[30,40,50,60,70,80].map(v=>`<option ${v==minS?'selected':''}>${v}</option>`).join('')}</select></label><button id="snd" class="${snd?'a':''}">🔔 ${snd?'Звук включён':'Звук выключен'}</button>${SOLO?'':'<button id="solo">⧉ В отдельном окне</button>'}</div>`;
+  const how=`<details class="how"><summary>Как это работает и по каким признакам ищем</summary><ul><li><b>Кто сказал:</b> пост или ответ Маска, Трампа, Белого дома (ASTEROID, PENGUIN, PNUT выросли после таких постов).</li><li><b>Образ:</b> животное, маскот, мем — легко превратить в тикер.</li><li><b>«Вау» тема:</b> ИИ, роботы, космос, летающие машины, ИИ-персонажи (GOAT, Ghibli).</li><li><b>Скорость:</b> тему одновременно подхватили несколько источников.</li><li><b>Свежесть:</b> рост идёт часы, потом копии и обвал. 🟢 монет ещё нет = рано, 🔴 уже запампили = поздно.</li></ul><p class="warn">Это эвристика, а не гарантия: большинство мемкоинов падает (CHILLGUY −95% после пика). Скам-проверки и вход решаешь сам.</p></details>`;
+  const cards=list.length?list.map(s=>`<article class="sg ${s.score>=75?'hi':s.score>=55?'mid':''}"><div class="bd"><div class="meta"><span class="badge">${s.score}</span><span class="s">${esc(s.person?s.person+' · '+s.src:s.src)}</span><span data-ts="${s.ts}">${age(s.ts)}</span>${s.hot?`<span>▲ ${s.hot>999?(s.hot/1000).toFixed(1)+'k':s.hot}</span>`:''}</div><a class="t" href="${esc(s.link)}" target="_blank" rel="noopener">${esc(s.title)}</a><div class="why">${s.reasons.map(r=>`<span class="${r.pts<0?'neg':''}">${esc(r.why)} ${r.pts>0?'+':''}${r.pts}</span>`).join('')}</div>${s.cluster&&s.cluster.n>1?`<div class="cl">Пишут: ${s.cluster.srcs.map(esc).join(', ')}${s.cluster.n>s.cluster.srcs.length?' и ещё':''}</div>`:''}${s.tokens&&s.tokens.length?`<div class="tk">${s.tokens.map(t=>`<button data-copy="${esc(t.toUpperCase())}">${esc(t.toUpperCase())} ⧉</button>`).join('')}</div>`:''}<div>${dexTag(s)}</div><div class="ac"><button data-idea="${s.id}">🪙 Идея монеты</button><a class="btn" target="_blank" rel="noopener" href="https://dexscreener.com/search?q=${encodeURIComponent((s.tokens&&s.tokens[0])||s.topic||s.title.slice(0,30))}">DexScreener</a><button class="${posted.has(s.id)?'ok':''}" data-post="${s.id}">${posted.has(s.id)?'Отправлено в канал':'В Telegram-канал'}</button></div></div></article>`).join(''):`<div class="empty">Сильных сигналов пока нет (порог ${minS}). Это нормально: хороших тем мало. Можно снизить «Мин. оценка».</div>`;
+  $('list').innerHTML=mt+tools+how+cards;
+}
+function render(){
+  pend=0;
+  const all=[...items.values()].filter(i=>Date.now()-i.ts<MAX);
+  $('nav').innerHTML=TABS.map(([k,n])=>`<button data-t="${k}" class="${k==tab?'a':''}">${n}<b>${k=='signals'?sigs.filter(s=>s.score>=minS).length:all.filter(i=>i.cat==k).length}</b></button>`).join('');
+  document.title=(sigs.filter(s=>s.score>=ALERT).length?'('+sigs.filter(s=>s.score>=ALERT).length+') ':'')+'PULSE';
+  const ppl=[...new Set(all.filter(i=>i.cat=='people').map(i=>i.person))];
+  const rg=[...new Set(all.filter(i=>i.cat=='news'&&i.reg).map(i=>i.reg))].sort((a,b)=>all.filter(i=>i.reg==b).length-all.filter(i=>i.reg==a).length);
+  $('chips').innerHTML=tab=='people'?['',...ppl].map(p=>`<button data-p="${esc(p)}" class="${p==person?'a':''}">${p||'Все'}</button>`).join(''):tab=='news'?['',...rg].map(r=>`<button data-r="${esc(r)}" class="${r==reg?'a':''}">${r||'Весь мир'}</button>`).join(''):'';
+  document.body.className=tab+(SOLO?' solo':'');
+  if(tab=='signals'){$('chips').innerHTML='';renderSignals();fresh.clear();return}
+  const list=all.filter(i=>i.cat==tab&&(!person||tab!='people'||i.person==person)&&(!reg||tab!='news'||i.reg==reg)).sort((a,b)=>sortHot?((b.hot||0)-(a.hot||0))||b.ts-a.ts:b.ts-a.ts).slice(0,300);
+  $('list').innerHTML=list.length?list.map(i=>`<article class="${fresh.has(i.id)?'n':''}">${i.img?`<img loading="lazy" src="${esc(i.img)}" alt="" onerror="this.remove()">`:''}<div class="bd"><div class="meta"><span class="s">${esc(i.person?i.person+' · '+i.src:i.src)}</span><span data-ts="${i.ts}">${age(i.ts)}</span>${i.hot?`<span>▲ ${i.hot>999?(i.hot/1000).toFixed(1)+'k':i.hot}</span>`:''}</div><a class="t" href="${esc(i.link)}" target="_blank" rel="noopener">${esc(i.title)}</a><div class="ac"><button class="${posted.has(i.id)?'ok':''}" data-post="${i.id}">${posted.has(i.id)?'Отправлено в канал':'В Telegram-канал'}</button></div></div></article>`).join(''):'<div class="empty">Пока пусто — новые записи появятся сами</div>';
+  fresh.clear();
+}
+document.addEventListener('click',async e=>{
+  if(e.target.id=='snd'){snd=!snd;localStorage.setItem('snd',snd?'1':'0');if(snd){beep();try{Notification.requestPermission()}catch{}}render();return}
+  if(e.target.id=='solo'){window.open(location.href.split('?')[0]+'?solo=1&repo='+REPO,'pulse-signals','width=440,height=820');return}
+  const idb=e.target.closest('[data-idea]');if(idb){const x=sigs.find(v=>v.id==idb.dataset.idea);if(x){const d=x.dex,dl=!d?'не проверено':!d.n?'монет по теме на Solana за 48ч нет':'уже есть '+d.n+', лучшая '+d.best.symbol+' '+money(d.best.mcap)+', '+agoMin(d.best.ageMin)+' назад';
+    const txt=`Хочу запустить мемкоин на Solana по этой новости.\nНовость: ${x.title}\nСсылка: ${x.link}\nВозраст: ${age(x.ts)}. Оценка сигнала: ${x.score}/100 (${x.reasons.filter(r=>r.pts>0).map(r=>r.why).join(', ')}).\nМонеты по теме: ${dl}.\n\nПридумай 3 варианта: название, тикер (до 6 букв), слоган, описание для страницы монеты, идею маскота/картинки (оригинальной, без чужих брендов и лиц реальных людей), текст первого поста в X. И честно скажи, не поздно ли заходить в эту тему.`;
+    try{navigator.clipboard.writeText(txt);toast('Запрос скопирован — вставь его Claude в чат')}catch{prompt('Скопируй запрос:',txt)}}return}
+  const cp=e.target.closest('[data-copy]');if(cp){try{navigator.clipboard.writeText(cp.dataset.copy);toast('Скопировано: '+cp.dataset.copy)}catch{}return}
+  if(e.target.id=='sort'){sortHot=!sortHot;e.target.textContent=sortHot?'Популярные':'Новые';render();return}
+  const t=e.target.closest('[data-t]'),p=e.target.closest('[data-p]'),r=e.target.closest('[data-r]'),b=e.target.closest('[data-post]');
+  if(t){tab=t.dataset.t;person='';reg='';render();scrollTo(0,0)}
+  else if(r){reg=r.dataset.r;render()}
+  else if(p){person=p.dataset.p;render()}
+  else if(b&&!posted.has(b.dataset.post)){
+    const tk=localStorage.getItem('gh')||prompt('GitHub токен (Personal access token)');if(!tk)return;
+    const r=await fetch(`https://api.github.com/repos/${REPO}/dispatches`,{method:'POST',headers:{authorization:'Bearer '+tk,accept:'application/vnd.github+json'},body:JSON.stringify({event_type:'post',client_payload:{id:b.dataset.post}})});
+    if(r.status==204){localStorage.setItem('gh',tk);posted.add(b.dataset.post);localStorage.setItem('posted',JSON.stringify([...posted]));toast('Отправляю в канал…');render()}
+    else{if([401,403,404].includes(r.status))localStorage.removeItem('gh');toast('Ошибка '+r.status+': проверь токен')}
+  }
+});
+document.addEventListener('change',e=>{if(e.target.id=='mins'){minS=+e.target.value;localStorage.setItem('mins',minS);render()}});
+function setLive(v,txt){$('live').className='live'+(v?' on':'');$('st').textContent=txt}
+const REPO=Q.get('repo')||(location.hostname.split('.')[0]+'/'+location.pathname.split('/')[1]);
+const RAW=`https://raw.githubusercontent.com/${REPO}/data/items.json`;
+let started=0;
+async function load(){
+  try{
+    const j=await(await fetch(RAW+'?t='+Date.now(),{cache:'no-store'})).json();
+    if(!started){started=1;posted=new Set(JSON.parse(localStorage.getItem('posted')||'[]'))}
+    (j.posted||[]).forEach(p=>posted.add(p));
+    const had=items.size,nw=new Map();let ch=0;
+    j.items.forEach(i=>{if(!items.has(i.id)){ch=1;if(had)fresh.add(i.id)}nw.set(i.id,i)});
+    if(nw.size!=items.size)ch=1;
+    const ns=j.signals||[],nk=ns.map(x=>x.id+':'+x.score+':'+(x.dex?x.dex.n:'-')).join();
+    ns.forEach(x=>{if(!seenSig.has(x.id)){seenSig.add(x.id);if(ready&&x.score>=ALERT&&!x.heavy)ping(x)}});
+    if(nk!=sigKey)ch=1;sigKey=nk;sigs=ns;metas=j.metas||[];ready=1;
+    items=nw;if(ch||!had)render();
+    setLive(1,'LIVE · данные '+age(j.updated)+' назад');
+  }catch{setLive(0,'жду первый запуск сборщика')}
+}
+load();setInterval(load,5000);
+setInterval(()=>document.querySelectorAll('[data-ts]').forEach(n=>n.textContent=age(+n.dataset.ts)),1000);
+setInterval(render,60000);
+</script>
+</body>
+</html>
