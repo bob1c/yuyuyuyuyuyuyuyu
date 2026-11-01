@@ -52,6 +52,9 @@ article.sg{border-left:5px solid var(--line)}article.sg.hi{border-left-color:#18
 .tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--mut)}.tools select,.tools button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:5px 11px;font-size:13px;cursor:pointer}.tools button.a{background:var(--ink);color:var(--bg)}
 details.how{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:13px}details.how summary{cursor:pointer;font-weight:600}details.how li{margin:5px 0}.warn{color:var(--mut);font-size:12px}
 .signals #sort{display:none}.solo nav{display:none}
+.cd{display:block;font-weight:700;color:#e0a100;margin:2px 0 4px}.cd.now{color:var(--acc)}.vip{color:#e0a100;font-weight:700}
+.badge.live{background:#18a058;color:#fff}.badge.soon{background:#e0a100;color:#111}.badge.rum{background:var(--mut);color:var(--bg)}
+.tk .ca{border-style:solid;font-size:12px}.src-note{font-size:12px;color:var(--mut)}
 #toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;opacity:0;transition:.2s;pointer-events:none}
 #toast.s{opacity:1}
 </style>
@@ -66,9 +69,9 @@ details.how{background:var(--card);border:1px solid var(--line);border-radius:10
 <div id="toast"></div>
 <script>
 const Q=new URLSearchParams(location.search),SOLO=Q.get('solo')=='1';
-const TABS=[['signals','🚀 Мемкоины'],['news','Новости'],['memes','Мемы'],['trends','Тренды'],['people','Персоны']];
+const TABS=[['upcoming','⏳ Предстоящие'],['launch','📢 Анонсы монет'],['signals','🚀 Мемкоины'],['news','Новости'],['memes','Мемы'],['trends','Тренды'],['people','Персоны']];
 const MAX=12*3600e3;
-let sortHot=0,items=new Map(),posted=new Set(),tab=SOLO?'signals':(Q.get('tab')||'signals'),person='',reg='',sigs=[],metas=[],sigKey='',seenSig=new Set(),ready=0,ALERT=60,minS=+(localStorage.getItem('mins')||40),snd=localStorage.getItem('snd')=='1',fresh=new Set(),pend=0;
+let sortHot=0,items=new Map(),posted=new Set(),tab=SOLO?'upcoming':(Q.get('tab')||'upcoming'),person='',reg='',sigs=[],ups=[],lns=[],metas=[],sigKey='',seenSig=new Set(),ready=0,ALERT=60,minS=+(localStorage.getItem('mins')||40),snd=localStorage.getItem('snd')=='1',fresh=new Set(),pend=0;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const age=t=>{const s=Math.max(0,(Date.now()-t)/1000|0);return s<60?s+' с':s<3600?(s/60|0)+' мин':(s/3600|0)+' ч '+((s%3600)/60|0)+' мин'};
@@ -79,6 +82,21 @@ const agoMin=m=>m<60?m+' мин':(m/60|0)+' ч';
 function beep(){try{const c=new(window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.value=.15;o.start();setTimeout(()=>{o.frequency.value=1175},150);setTimeout(()=>{o.stop();c.close()},380)}catch{}}
 function ping(s){toast('🚨 '+s.score+' · '+s.title.slice(0,60));if(snd){beep();try{if(Notification.permission=='granted')new Notification('Сигнал '+s.score+'/100',{body:s.title})}catch{}}}
 const dexTag=s=>{const d=s.dex;if(!d)return'<span class="dx">Наличие монет не проверено — нажми DexScreener</span>';if(!d.n)return'<span class="dx g">🟢 Монет по теме на Solana за 48 ч ещё нет — можно быть первым</span>';const b=d.best;return`<span class="dx ${b.mcap>=1e6?'r':'y'}">${b.mcap>=1e6?'🔴 Уже запампили':'🟡 Уже есть'} ${d.n}: <a href="${esc(b.url)}" target="_blank" rel="noopener">${esc(b.symbol)}</a> ${money(b.mcap)} · ${agoMin(b.ageMin)} назад</span>`};
+const kindL={announce:['soon','📢 ЗАЯВИЛ'],done:['live','✅ ВЫПУСТИЛ'],rumor:['rum','❔ СЛУХИ']};
+function cdown(eta){const d=eta-Date.now();if(d<=0)return'<span class="cd now">⏱ время запуска наступило</span>';const m=Math.round(d/60000);return`<span class="cd">⏱ запуск через ${m<60?m+' мин':(m/60|0)+' ч '+(m%60)+' мин'}</span>`}
+function lead(u){const b=u.dex&&u.dex.best;if(!b||!b.created||b.created<u.ts)return'';const m=Math.round((b.created-u.ts)/60000);return m>=1?` · анонс был за ${agoMin(m)} до запуска`:''}
+function renderUp(kind){
+  const L=kind=='upcoming'?ups:lns;
+  const how=kind=='upcoming'?`<details class="how"><summary>Откуда берём информацию</summary><ul><li><b>Telegram-каналы:</b> список из <code>config.json</code> + новые каналы находятся сами по ссылкам в постах про запуски (так и нашёлся бы канал разработчика из поста «Детальки»).</li><li><b>Крипто-СМИ</b> (16 сайтов), <b>Mastodon</b>-теги, <b>Reddit</b>, <b>Google News</b> по запросам про предстоящие запуски.</li><li>Распознаём «запуск через 2ч», «сегодня в 15:00 UTC», «в пятницу запустят», адрес контракта (CA) и ссылки DexScreener, и проверяем, вышла ли уже монета.</li><li><b>Не видим:</b> X/Twitter, Discord и закрытые чаты. Чем больше каналов ты добавишь в <code>config.json</code>, тем раньше сигнал.</li></ul><p class="warn">Анонс ≠ хороший запуск: «х2–х30» в постах — реклама. Скам-проверка за тобой.</p></details>`:`<details class="how"><summary>Что здесь</summary><ul><li>Заявления «запускаю свой коин/токен» от известных персон, звёзд и проектов в новостях и крипто-СМИ.</li><li>⭐ — Маск, Трамп, Белый дом, знаменитости, политики. Слухи помечены отдельно.</li></ul></details>`;
+  const cards=L.length?L.map(u=>{const up=u.up||{},l=u.launch||{},isUp=kind=='upcoming';
+    const badge=isUp?(up.k=='live'?'<span class="badge live">🟢 ВЫШЛА</span>':'<span class="badge soon">⏳ СКОРО</span>'):`<span class="badge ${kindL[l.k][0]}">${kindL[l.k][1]}</span>`;
+    const tks=(isUp?up.tickers:u.lt)||[];
+    const dx=u.dex?(u.dex.best?`<span class="dx ${up.k=='live'||u.dex.best.mcap>=1e6?'r':'g'}">${isUp?'🟢 Монета уже есть':'🔎 Есть монета'}: <a href="${esc(u.dex.best.url)}" target="_blank" rel="noopener">${esc(u.dex.best.symbol)}</a> ${money(u.dex.best.mcap)} · вышла ${agoMin(u.dex.best.ageMin)} назад${isUp?lead(u):''}</span>`:'<span class="dx g">🟢 Такой монеты на Solana за 48 ч ещё нет</span>'):'';
+    const ca=isUp&&up.ca?`<button class="ca" data-copy="${esc(up.ca)}">CA ${esc(up.ca.slice(0,6))}…${esc(up.ca.slice(-4))} ⧉</button>`:'';
+    const lnk=isUp&&up.ca?`https://dexscreener.com/solana/${up.ca}`:`https://dexscreener.com/search?q=${encodeURIComponent(tks[0]||u.title.slice(0,30))}`;
+    return`<article class="sg ${isUp?(up.k=='live'?'hi':'mid'):(l.vip?'hi':'')}"><div class="bd"><div class="meta">${badge}${!isUp&&l.vip?'<span class="vip">⭐ известная персона</span>':''}<span class="s">${esc(u.src)}</span><span data-ts="${u.ts}">${age(u.ts)}</span></div>${isUp&&up.eta?cdown(up.eta):''}<a class="t" href="${esc(u.link)}" target="_blank" rel="noopener">${esc(u.title.length>420?u.title.slice(0,420)+'…':u.title)}</a>${tks.length||ca?`<div class="tk">${tks.map(t=>`<button data-copy="${esc(t.toUpperCase())}">${esc(t.toUpperCase())} ⧉</button>`).join('')}${ca}</div>`:''}<div>${dx}</div>${u.cluster&&u.cluster.n>1?`<div class="cl">Пишут: ${u.cluster.srcs.map(esc).join(', ')}</div>`:''}<div class="ac"><a class="btn" target="_blank" rel="noopener" href="${esc(lnk)}">DexScreener</a><button data-idea="${u.id}">🪙 Идея монеты</button><button class="${posted.has(u.id)?'ok':''}" data-post="${u.id}">${posted.has(u.id)?'Отправлено в канал':'В Telegram-канал'}</button></div></div></article>`}).join(''):`<div class="empty">${kind=='upcoming'?'Пока ничего не нашли. Добавь больше Telegram-каналов в config.json: чем их больше, тем раньше видно запуски.':'Анонсов монет от персон за последние 12 часов нет.'}</div>`;
+  $('list').innerHTML=how+cards;
+}
 function renderSignals(){
   const list=sigs.filter(s=>s.score>=minS&&Date.now()-s.ts<MAX);
   const mt=metas.length?`<div class="metas"><b>🔥 Горячие нарративы (DexScreener):</b>${metas.map(m=>`<span class="mc">${esc(m.name)} <i class="${(m.h1||0)>=0?'up':'dn'}">${pct(m.h1)} 1ч</i> <i class="${(m.h6||0)>=0?'up':'dn'}">${pct(m.h6)} 6ч</i></span>`).join('')}</div>`:'';
@@ -90,13 +108,14 @@ function renderSignals(){
 function render(){
   pend=0;
   const all=[...items.values()].filter(i=>Date.now()-i.ts<MAX);
-  $('nav').innerHTML=TABS.map(([k,n])=>`<button data-t="${k}" class="${k==tab?'a':''}">${n}<b>${k=='signals'?sigs.filter(s=>s.score>=minS).length:all.filter(i=>i.cat==k).length}</b></button>`).join('');
-  document.title=(sigs.filter(s=>s.score>=ALERT).length?'('+sigs.filter(s=>s.score>=ALERT).length+') ':'')+'PULSE';
+  $('nav').innerHTML=TABS.map(([k,n])=>`<button data-t="${k}" class="${k==tab?'a':''}">${n}<b>${k=='signals'?sigs.filter(s=>s.score>=minS).length:k=='upcoming'?ups.length:k=='launch'?lns.length:all.filter(i=>i.cat==k).length}</b></button>`).join('');
+  document.title=((sigs.filter(s=>s.score>=ALERT).length+ups.filter(u=>u.up.k=='soon').length)?'('+(sigs.filter(s=>s.score>=ALERT).length+ups.filter(u=>u.up.k=='soon').length)+') ':'')+'PULSE';
   const ppl=[...new Set(all.filter(i=>i.cat=='people').map(i=>i.person))];
   const rg=[...new Set(all.filter(i=>i.cat=='news'&&i.reg).map(i=>i.reg))].sort((a,b)=>all.filter(i=>i.reg==b).length-all.filter(i=>i.reg==a).length);
   $('chips').innerHTML=tab=='people'?['',...ppl].map(p=>`<button data-p="${esc(p)}" class="${p==person?'a':''}">${p||'Все'}</button>`).join(''):tab=='news'?['',...rg].map(r=>`<button data-r="${esc(r)}" class="${r==reg?'a':''}">${r||'Весь мир'}</button>`).join(''):'';
   document.body.className=tab+(SOLO?' solo':'');
   if(tab=='signals'){$('chips').innerHTML='';renderSignals();fresh.clear();return}
+  if(tab=='upcoming'||tab=='launch'){$('chips').innerHTML='';renderUp(tab);fresh.clear();return}
   const list=all.filter(i=>i.cat==tab&&(!person||tab!='people'||i.person==person)&&(!reg||tab!='news'||i.reg==reg)).sort((a,b)=>sortHot?((b.hot||0)-(a.hot||0))||b.ts-a.ts:b.ts-a.ts).slice(0,300);
   $('list').innerHTML=list.length?list.map(i=>`<article class="${fresh.has(i.id)?'n':''}">${i.img?`<img loading="lazy" src="${esc(i.img)}" alt="" onerror="this.remove()">`:''}<div class="bd"><div class="meta"><span class="s">${esc(i.person?i.person+' · '+i.src:i.src)}</span><span data-ts="${i.ts}">${age(i.ts)}</span>${i.hot?`<span>▲ ${i.hot>999?(i.hot/1000).toFixed(1)+'k':i.hot}</span>`:''}</div><a class="t" href="${esc(i.link)}" target="_blank" rel="noopener">${esc(i.title)}</a><div class="ac"><button class="${posted.has(i.id)?'ok':''}" data-post="${i.id}">${posted.has(i.id)?'Отправлено в канал':'В Telegram-канал'}</button></div></div></article>`).join(''):'<div class="empty">Пока пусто — новые записи появятся сами</div>';
   fresh.clear();
@@ -104,8 +123,8 @@ function render(){
 document.addEventListener('click',async e=>{
   if(e.target.id=='snd'){snd=!snd;localStorage.setItem('snd',snd?'1':'0');if(snd){beep();try{Notification.requestPermission()}catch{}}render();return}
   if(e.target.id=='solo'){window.open(location.href.split('?')[0]+'?solo=1&repo='+REPO,'pulse-signals','width=440,height=820');return}
-  const idb=e.target.closest('[data-idea]');if(idb){const x=sigs.find(v=>v.id==idb.dataset.idea);if(x){const d=x.dex,dl=!d?'не проверено':!d.n?'монет по теме на Solana за 48ч нет':'уже есть '+d.n+', лучшая '+d.best.symbol+' '+money(d.best.mcap)+', '+agoMin(d.best.ageMin)+' назад';
-    const txt=`Хочу запустить мемкоин на Solana по этой новости.\nНовость: ${x.title}\nСсылка: ${x.link}\nВозраст: ${age(x.ts)}. Оценка сигнала: ${x.score}/100 (${x.reasons.filter(r=>r.pts>0).map(r=>r.why).join(', ')}).\nМонеты по теме: ${dl}.\n\nПридумай 3 варианта: название, тикер (до 6 букв), слоган, описание для страницы монеты, идею маскота/картинки (оригинальной, без чужих брендов и лиц реальных людей), текст первого поста в X. И честно скажи, не поздно ли заходить в эту тему.`;
+  const idb=e.target.closest('[data-idea]');if(idb){const x=[...sigs,...ups,...lns].find(v=>v.id==idb.dataset.idea);if(x){const d=x.dex,dl=!d?'не проверено':!d.n?'монет по теме на Solana за 48ч нет':'уже есть '+d.n+', лучшая '+d.best.symbol+' '+money(d.best.mcap)+', '+agoMin(d.best.ageMin)+' назад';
+    const txt=`Хочу запустить мемкоин на Solana по этой новости.\nНовость: ${x.title}\nСсылка: ${x.link}\nВозраст: ${age(x.ts)}. Оценка сигнала: ${x.score}/100 (${(x.reasons||[]).filter(r=>r.pts>0).map(r=>r.why).join(', ')}).\nМонеты по теме: ${dl}.\n\nПридумай 3 варианта: название, тикер (до 6 букв), слоган, описание для страницы монеты, идею маскота/картинки (оригинальной, без чужих брендов и лиц реальных людей), текст первого поста в X. И честно скажи, не поздно ли заходить в эту тему.`;
     try{navigator.clipboard.writeText(txt);toast('Запрос скопирован — вставь его Claude в чат')}catch{prompt('Скопируй запрос:',txt)}}return}
   const cp=e.target.closest('[data-copy]');if(cp){try{navigator.clipboard.writeText(cp.dataset.copy);toast('Скопировано: '+cp.dataset.copy)}catch{}return}
   if(e.target.id=='sort'){sortHot=!sortHot;e.target.textContent=sortHot?'Популярные':'Новые';render();return}
@@ -135,7 +154,10 @@ async function load(){
     if(nw.size!=items.size)ch=1;
     const ns=j.signals||[],nk=ns.map(x=>x.id+':'+x.score+':'+(x.dex?x.dex.n:'-')).join();
     ns.forEach(x=>{if(!seenSig.has(x.id)){seenSig.add(x.id);if(ready&&x.score>=ALERT&&!x.heavy)ping(x)}});
-    if(nk!=sigKey)ch=1;sigKey=nk;sigs=ns;metas=j.metas||[];ready=1;
+    const uk=(j.upcoming||[]).map(x=>x.id+(x.up.k)+(x.dex&&x.dex.best?x.dex.best.mcap:'')).join()+'|'+(j.launches||[]).map(x=>x.id).join();
+    (j.upcoming||[]).forEach(x=>{const k='u'+x.id+x.up.k;if(!seenSig.has(k)){seenSig.add(k);if(ready){toast((x.up.k=='live'?'🟢 Вышла: ':'⏳ Скоро: ')+x.title.slice(0,60));if(snd)beep()}}});
+    (j.launches||[]).forEach(x=>{const k='l'+x.id;if(!seenSig.has(k)){seenSig.add(k);if(ready&&x.launch.vip&&x.launch.k!='rumor'){toast('📢 ⭐ '+x.title.slice(0,60));if(snd)beep()}}});
+    if(nk+uk!=sigKey)ch=1;sigKey=nk+uk;sigs=ns;ups=j.upcoming||[];lns=j.launches||[];metas=j.metas||[];ready=1;
     items=nw;if(ch||!had)render();
     setLive(1,'LIVE · данные '+age(j.updated)+' назад');
   }catch{setLive(0,'жду первый запуск сборщика')}
